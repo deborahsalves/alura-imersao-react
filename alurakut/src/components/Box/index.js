@@ -4,6 +4,7 @@ const Box = styled.div `
   background-color: #ffffff;
   border-radius: 8px;
   padding: 16px;
+  overflow: hidden;
 
   /* CSS Pré-Pronto */
   margin-bottom: 10px;
