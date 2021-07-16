@@ -42,14 +42,8 @@ const ProfileRelationsBox = (properties) => {
 }
 
 export default function Home() {
-  React.useState();
   const currentUser = 'deborahsalves';
-  const [comunidades, setCommunity] = React.useState([{
-    id: '0initial',
-    title: 'Initial Community',
-    image: 'http://placehold.it/300x300',
-    url: 'https://github.com/alura-challenges/alurakut/',
-  }]);
+  const [comunidades, setCommunities] = React.useState([]);
   const [pessoasFavoritas, setPessoasFavoritas] = React.useState([
     {
       id: 0,
@@ -102,12 +96,38 @@ export default function Home() {
   ])
   const [seguidores, setSeguidores] = React.useState([]);
   React.useEffect(() => {
+    // GET from GitHub
     fetch('https://api.github.com/users/deborahsalves/followers')
-    .then((serverReply) => {
-      return serverReply.json();
+    .then((serverResponse) => {
+      return serverResponse.json();
     })
-    .then((fullReply) => {
-      setSeguidores(fullReply);
+    .then((fullResponse) => {
+      setSeguidores(fullResponse);
+    })
+
+    // API GraphQL
+    fetch('https://graphql.datocms.com/', {
+      // config obj
+      method: 'POST',
+      headers: {
+        'Authorization': '8c3b719b562f7eba887d06bc909207',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ 'query': `query {
+          allCommunities {
+            id
+            title
+            avatarUrl
+            url
+          }
+        }`
+      })
+    })
+    .then((serverResponse) => serverResponse.json())
+    .then((fullResponse) => {
+      const communitiesFromDato = fullResponse.data.allCommunities;
+      setCommunities(communitiesFromDato);
     })
   }, [])
 
@@ -126,21 +146,32 @@ export default function Home() {
           </Box>
 
           <Box>
-            <h2 className="subtitle">O que você deseja fazer</h2>
+            <h2 className="subTitle">O que você deseja fazer?</h2>
 
             <form onSubmit={function handleCreateCommunity(e) {
               e.preventDefault();
               const dataFromForm = new FormData(e.target);
 
               const community = {
-                id: new Date().toISOString(),
+                // id: new Date().toISOString(),
                 title: dataFromForm.get('title'),
-                image: dataFromForm.get('image'),
+                avatarUrl: dataFromForm.get('image'),
                 url: dataFromForm.get('url')
               }
               
-              const updatedCommunities = [...comunidades, community];
-              setCommunity(updatedCommunities);
+              fetch('/api/communities', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(community),
+              })
+              .then(async (response) => {
+                const data = await response.json();
+                const community = data.myRecord;
+                const updatedCommunities = [...comunidades, community];
+                setCommunities(updatedCommunities);
+                })
             }}>
               <div>
                 <input 
@@ -172,29 +203,14 @@ export default function Home() {
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
           <ProfileRelationsBox title="Seguidores" items={seguidores}/>
           <ProfileRelationsBox title="FavPpl da Programação" items={pessoasFavoritas}/>
-          {/* <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">FavPpl da programação ({pessoasFavoritas.length})</h2>
-            <ul>
-              {pessoasFavoritas.slice(0,6).map((person) => {
-                return (
-                  <li key={person}>
-                    <a href={`/users/${person}`} >
-                      <img src={`https://github.com/${person}.png`} />
-                      <span>{person}</span>
-                    </a>  
-                  </li>
-                )
-              })}
-            </ul>
-          </ProfileRelationsBoxWrapper> */}
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
             <ul>
               {comunidades.slice(0,6).map((community) => {
                 return (
                   <li key={community.id}>
-                    <a href={`/users/${community.title}`} >
-                    <img src={community.image} />
+                    <a href={`${community.url}`} >
+                    <img src={`${community.avatarUrl}`} />
                       <span>{community.title}</span>
                     </a>  
                   </li>
