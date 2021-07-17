@@ -1,8 +1,13 @@
 import React from 'react';
+import nookies from 'nookies';
+import jsonwebtoken from 'jsonwebtoken';
 import MainGrid from '../src/components/MainGrid';
 import Box from '../src/components/Box';
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons';
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
+
+
+const baseUrl = 'http://localhost:3000';
 
 const ProfileSidebar = (properties) => {
   return (
@@ -41,8 +46,8 @@ const ProfileRelationsBox = (properties) => {
   )
 }
 
-export default function Home() {
-  const currentUser = 'deborahsalves';
+export default function Home(props) {
+  const currentUser = props.githubUser;
   const [comunidades, setCommunities] = React.useState([]);
   const [pessoasFavoritas, setPessoasFavoritas] = React.useState([
     {
@@ -222,4 +227,35 @@ export default function Home() {
       </MainGrid>
     </>
     )
+}
+
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context);
+  const token = cookies.USER_TOKEN;
+  console.log('Decoding', jsonwebtoken.decode(token))
+
+  const { isAuthenticated } = await fetch(`${baseUrl}/api/auth`, {
+    headers: {
+      Authorization: token
+    }
+  })
+  .then((response) => response.json())
+
+  if(!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  const { githubUser } = jsonwebtoken.decode(token);
+
+  return {
+    props: {
+      githubUser
+    }, // will be passed to the page component as props
+  }
 }

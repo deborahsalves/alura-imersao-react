@@ -1,4 +1,6 @@
 import React from 'react';
+import nookies from 'nookies';
+import { useRouter } from 'next/router';
 import styled, { css } from 'styled-components';
 import NextLink from 'next/link';
 
@@ -7,6 +9,7 @@ const v = '1';
 
 
 function Link({ href, children, ...props }) {
+  const router = useRouter();
   return (
     <NextLink href={href} passHref>
       <a {...props}>
@@ -35,7 +38,11 @@ export function AlurakutMenu({ githubUser }) {
         </nav>
 
         <nav>
-          <a href={`/logout`}>
+          <a href={``} onClick={(e) => {
+          e.preventDefault;
+          nookies.destroy(null, 'USER_TOKEN')
+          router.push('/logout')          
+        }}>
             Sair
           </a>
           <div>
@@ -211,8 +218,12 @@ export function AlurakutProfileSidebarMenuDefault() {
           <img src={`${BASE_URL}/icons/plus.svg`} />
             GitHub Trends
           </a>
-        <a href="/logout">
-          <img src={`${BASE_URL}//icons/logout.svg`} />
+        <a href="" onClick={(e) => {
+          e.preventDefault;
+          nookies.destroy(null, 'USER_TOKEN')
+          router.push('/logout')          
+        }}>
+          <img src={`${BASE_URL}/icons/logout.svg`} />
             Sair
           </a>
       </nav>
@@ -434,6 +445,77 @@ const AlurakutLoginScreen = css`
           background-color: var(--colorPrimary);
           color: var(--textSecondaryColor);
         }
+      }
+    }
+    .footerArea {
+      grid-area: footerArea;
+      background-color: var(--backgroundQuarternary);
+      border-radius: var(--commonRadius);
+      padding: 8px;
+      p {
+        font-size: 12px;
+        text-align: center;
+        a {
+          text-decoration: none;
+          color: var(--colorPrimary);
+        }
+      }
+    }
+  }
+  .logoutScreen {
+    padding: 16px;
+    max-width: 1110px;
+    display: grid;
+    --gap: 12px;
+    --gutter: 16px;
+    grid-gap: var(--gap);
+    grid-template-areas: 
+      "logoArea"
+      "formArea"
+      "footerArea";
+    @media(min-width: 860px) {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: 
+              "logoArea logoArea"
+              "logoArea logoArea"
+              "footerArea footerArea";
+    }
+    .logoArea {
+      grid-area: logoArea;
+      background-color: var(--backgroundTertiary);
+      border-radius: var(--commonRadius);
+      padding: var(--gutter);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      min-height: 263px;
+      @media(min-width: 860px) {
+        min-height: 368px;
+      }
+      big {
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      p {
+        font-size: 12px;
+        line-height: 1.2;
+        &:not(:last-child) {
+          margin-bottom: 12px;
+        }
+        strong {
+          color: var(--colorQuarternary);
+        }
+        a {
+          text-decoration: none;
+        }
+      }
+      img {
+        max-height: 45px;
+        margin-bottom: 36px;
       }
     }
     .footerArea {
